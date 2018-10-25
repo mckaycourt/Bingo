@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Bingo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="animations.css">
+</head>
+<body>
+<div id="break">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+</div>
+<!--<h1 style="text-align:center;">Singles Ward Bingo!</h1>-->
+<!--<h2 id="title">Add your own options:</h2>-->
+<h1 class="menuOptions slideExpandUp" id="menu1">Welcome to Single's Ward Bingo!</h1>
+<form id="form" action="insert.php" method="get">
+    <h2>Add a Custom Option:</h2>
+    <input required="required" type="text" name="tile">
+    <button id="submit" type="submit" value="Submit"><h3>Submit</h3></button>
+    <button id="back" onclick="goBack()"><h3>Back</h3></button>
+</form>
+<button id="play" onclick="playButton()"><h3>Play!</h3></button>
+<br>
+<br>
+<div id="ajax"></div>
+
+
+<h1 style="text-align: center;" id="bingo"></h1>
+<button id="continue" style="display:none;" onclick="playOn()">Play On!</button>
+
+<table id="table">
+    <tr>
+        <td class="cell" id="0" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="1" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="2" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="3" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="4" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="total" id="total1">0</td>
+    </tr>
+    <tr>
+        <td class="cell" id="5" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="6" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="7" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="8" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="9" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="total" id="total2">0</td>
+    </tr>
+    <tr>
+        <td class="cell" id="10" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="11" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="12" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="13" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="14" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="total" id="total3">0</td>
+    </tr>
+    <tr>
+        <td class="cell" id="15" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="16" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="17" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="18" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="19" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="total" id="total4">0</td>
+    </tr>
+    <tr>
+        <td class="cell" id="20" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="21" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="22" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="23" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="cell" id="24" data-checked="false" onclick="change(this.id)">Test</td>
+        <td class="total" id="total5">0</td>
+    </tr>
+    <tr>
+        <td class="total" id="total6">0</td>
+        <td class="total" id="total7">0</td>
+        <td class="total" id="total8">0</td>
+        <td class="total" id="total9">0</td>
+        <td class="total" id="total10">0</td>
+        <td class="total" id="total11">0</td>
+        <td class="total" id="total12">0</td>
+    </tr>
+
+</table>
+
+<div id="menu">
+
+    <div class="menuOptions" style="display:none;" id="menu5">
+        <button onclick="resumePlay()"><h2>Resume Game</h2></button>
+    </div>
+    <div class="menuOptions slideExpandUp" id="menu2">
+        <button onclick="quickPlay()"><h2>Quick Play</h2></button>
+    </div>
+    <div class="menuOptions slideExpandUp" id="menu3">
+        <button onclick="addOptions()"><h2>Add Options</h2></button>
+    </div>
+    <div class="menuOptions slideExpandUp" id="menu4">
+        <button onclick="customPlay()"><h2>Custom Play</h2></button>
+    </div>
+</div>
+
+
+</body>
+
+<button id="backButton" onclick="goBack()">Back</button>
+
+</html>
+
+<script>
+    var array = [];
+    var bingo = false;
+
+    var total1 = false;
+    var total2 = false;
+    var total3 = false;
+    var total4 = false;
+    var total5 = false;
+    var total6 = false;
+    var total7 = false;
+    var total8 = false;
+    var total9 = false;
+    var total10 = false;
+    var total11 = false;
+    var total12 = false;
+
+
+    function quickPlay() {
+        $("#menu").fadeToggle();
+        play();
+    }
+
+    function playButton() {
+        $("#play").fadeToggle();
+        play();
+    }
+
+    function saveJson() {
+        var json = "{ \"tiles\":[";
+        $(".cell").each(function (index) {
+            json += "{\"position\"";
+            json += ":";
+            json += "\"";
+            json += index;
+            json += "\",";
+            json += "\"checked\"";
+            json += ":\"";
+            console.log($(this).css("background-color"));
+            if ($(this).css("background-color") === "rgb(255, 0, 0)") {
+                json += "true";
+            }
+            else {
+                json += "false";
+            }
+            json += "\",";
+            json += "\"html\":\"";
+            json += $(this).html();
+            json += "\"";
+            json += "},";
+        });
+        json = json.substr(0, json.length - 1);
+        json += "]}";
+        console.log(json);
+        localStorage.setItem("json", json);
+
+    }
+
+    function playOn() {
+        $("#table").toggle();
+        $("#bingo").html("");
+        $("#continue").toggle();
+
+    }
+
+    function addOptions() {
+        $("#form").addClass("slideDown");
+        $("#menu").addClass("slideDown");
+        $("#form").fadeToggle();
+        $("#menu").fadeToggle();
+    }
+
+    function customPlay() {
+        $("#menu").addClass("slideDown");
+        $("#ajax").addClass("slideDown");
+        $("#play").addClass("slideDown");
+        $("#menu").fadeToggle();
+        $("#ajax").fadeToggle();
+        $("#play").fadeToggle();
+    }
+
+    function change(id) {
+        var ID = $("#" + id);
+//        ID.addClass("bounce");
+        var table = document.getElementById("table");
+        var col = ID.parent().children().index(ID);
+        var row = ID.parent().parent().children().index(ID.parent());
+
+        var temp1 = table.rows[row].cells[5].innerHTML;
+        var temp2 = table.rows[5].cells[col].innerHTML;
+        table.rows[row].cells[5].innerHTML = parseInt(temp1) + 1;
+        table.rows[5].cells[col].innerHTML = parseInt(temp2) + 1;
+
+        console.log(ID.css("background-color"));
+
+        if (ID.attr("data-checked") === "true") {
+            ID.attr("data-checked", "false");
+            ID.css("background-color", "#ffffff");
+            table.rows[row].cells[5].innerHTML = parseInt(temp1) - 1;
+            table.rows[5].cells[col].innerHTML = parseInt(temp2) - 1;
+            if (row == 0 && col == 0) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) - 1;
+            }
+            if (row == 1 && col == 1) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) - 1;
+            }
+            if (row == 2 && col == 2) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) - 1;
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) - 1;
+            }
+            if (row == 3 && col == 3) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) - 1;
+            }
+            if (row == 4 && col == 4) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) - 1;
+            }
+            if (row == 0 && col == 4) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) - 1;
+            }
+            if (row == 1 && col == 3) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) - 1;
+            }
+            if (row == 3 && col == 1) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) - 1;
+            }
+            if (row == 4 && col == 0) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) - 1;
+            }
+        }
+        else {
+            ID.attr("data-checked", "true");
+            ID.css("background-color", "#ff0000");
+            table.rows[row].cells[5].innerHTML = parseInt(temp1) + 1;
+            table.rows[5].cells[col].innerHTML = parseInt(temp2) + 1;
+
+            if (row == 0 && col == 0) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) + 1;
+            }
+            if (row == 1 && col == 1) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) + 1;
+            }
+            if (row == 2 && col == 2) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) + 1;
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) + 1;
+            }
+            if (row == 3 && col == 3) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) + 1;
+            }
+            if (row == 4 && col == 4) {
+                table.rows[5].cells[5].innerHTML = parseInt(table.rows[5].cells[5].innerHTML) + 1;
+            }
+            if (row == 0 && col == 4) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) + 1;
+            }
+            if (row == 1 && col == 3) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) + 1;
+            }
+            if (row == 3 && col == 1) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) + 1;
+            }
+            if (row == 4 && col == 0) {
+                table.rows[5].cells[6].innerHTML = parseInt(table.rows[5].cells[6].innerHTML) + 1;
+            }
+        }
+        saveJson();
+        winner();
+
+    }
+
+    function add(id) {
+        console.log(id);
+        var ID = $("#" + id);
+        if (ID.css("background-color") === "rgb(255, 0, 0)") {
+            ID.css("background-color", "#ffffff");
+            for (var i = 0; i < array.length; i++) {
+                if (ID.html() === array[i]) {
+                    console.log("remove");
+                    array.splice(i, 1);
+                }
+            }
+        }
+        else {
+            ID.css("background-color", "#f00");
+            array.push(ID.html());
+        }
+//        $("#array").append(ID.html());
+//        $("#array").append("<br>");
+
+        console.log(array);
+
+    }
+
+    function exist(string) {
+        if (array.length === 0) {
+            return true;
+        }
+        for (var i = 0; i < array.length; i++) {
+            if (string === array[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
+    function resetTotals() {
+        for (var i = 1; i < 13; i++) {
+            $("#total" + i).html("0");
+            console.log(i);
+        }
+        bingo = false;
+        total1 = false;
+        total2 = false;
+        total3 = false;
+        total4 = false;
+        total5 = false;
+        total6 = false;
+        total7 = false;
+        total8 = false;
+        total9 = false;
+        total10 = false;
+        total11 = false;
+        total12 = false;
+    }
+
+    function play() {
+        $("#backButton").fadeToggle();
+        resetTotals();
+        var num = 0;
+        var i = 0;
+        var tempArray= [];
+        var j = 0;
+        $(".options").each(function(){
+            console.log((this).innerHTML);
+            tempArray.push((this).innerHTML);
+            j++;
+        });
+        console.log("temp");
+        tempArray = shuffle(tempArray);
+        console.log(tempArray);
+        while (array.length < 24) {
+            var add1 = tempArray[i];
+            console.log(add1);
+            if (exist(add1)) {
+                array.push(add1);
+                i++;
+            }
+            else {
+                i++;
+            }
+        }
+        array = shuffle(array);
+        while (array.length != 0) {
+            if (num !== 12) {
+                var nug = array.pop();
+                $("#" + num).html(nug);
+//                $("#" + num).removeClass("bounce");
+                $("#" + num).attr("data-checked", "false");
+                $("#" + num).css("background-color", "#ffffff");
+                num++;
+            }
+            else {
+                $("#" + num).html("<h2>Free Space</h2>");
+                $("#" + num).attr("data-checked", "false");
+                change(num);
+
+                num++;
+            }
+        }
+        $("#table").addClass("slideDown");
+        $("#list").addClass("slideDown");
+        $("#title").addClass("slideDown");
+        $("#break").addClass("slideDown");
+        $("#table").fadeToggle();
+        $("#list").fadeToggle();
+        $("#title").fadeToggle();
+        $("#break").fadeToggle();
+
+//        $("#play").toggle();
+//        $("#form").toggle();
+//        $("#play").toggle();
+//        $("#form").toggle();
+//        $(".cell").addClass("tossing");
+        saveJson();
+    }
+
+    function winner() {
+        var table = document.getElementById("table");
+
+
+        if (table.rows[0].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total1 = true;
+        }
+        if (table.rows[1].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total2 = true;
+        }
+        if (table.rows[2].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total3 = true;
+        }
+        if (table.rows[3].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total4 = true;
+        }
+        if (table.rows[4].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total5 = true;
+        }
+        if (table.rows[5].cells[0].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total6 = true;
+        }
+        if (table.rows[5].cells[1].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total7 = true;
+        }
+        if (table.rows[5].cells[2].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total8 = true;
+        }
+        if (table.rows[5].cells[3].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total9 = true;
+        }
+        if (table.rows[5].cells[4].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total10 = true;
+        }
+        if (table.rows[5].cells[5].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total11 = true;
+        }
+        if (table.rows[5].cells[6].innerHTML === "5") {
+            if (!bingo) {
+                $("#bingo").html("BINGO!!");
+                $("#table").toggle();
+                $("#continue").toggle();
+                bingo = true;
+            }
+            total12 = true;
+        }
+        if (total1 && total2 && total3 && total4 && total5 && total6 && total7 && total8 && total9 && total10 && total11 && total12) {
+            $("#bingo").html("BLACKOUT!!");
+            $("#table").toggle();
+            $("#backButton").fadeToggle();
+            localStorage.removeItem("json");
+            setTimeout(function(){
+                goBack();
+            }, 3000);
+        }
+//        else {
+//            $("#bingo").html("");
+//        }
+    }
+
+    function callAjax() {
+        $.ajax({
+            url: "getTiles.php",
+            type: "html",
+            success: function (result) {
+                $("#ajax").html(result);
+            }
+        });
+//        $("#list").append("<tr><td id='option'>done</td></tr>");
+//        console.log(localStorage.getItem("json"));
+        if (localStorage.getItem("json") !== null) {
+            $("#menu5").addClass("slideExpandUp");
+            $("#menu5").fadeToggle();
+        }
+
+    }
+
+    function resumePlay() {
+        var json = JSON.parse(localStorage.getItem("json"));
+        console.log(json.tiles);
+        for (var i = 0; i < json.tiles.length; i++) {
+            $("#" + i).html(json.tiles[i].html);
+            if (json.tiles[i].checked === "true") {
+                change(i);
+            }
+        }
+
+        saveJson();
+
+
+
+        $("#table").fadeToggle();
+        $("#list").fadeToggle();
+        $("#title").fadeToggle();
+        $("#break").fadeToggle();
+        $("#menu").fadeToggle();
+        $("#backButton").fadeToggle();
+    }
+
+    function goBack() {
+        window.location = "http://mckayfiles.com/bingo";
+    }
+
+    window.onload = callAjax();
+
+</script>
+<style>
+    .menuOptions {
+        visibility: hidden;
+        text-align: center;
+    }
+
+    .total {
+        display: none;
+    }
+
+    #table {
+        display: none;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid black;
+        padding: 2.5%;
+        width: 20%;
+        text-align: center;
+        font-size: 25px;
+        border-radius: 5px;
+    }
+
+    #ajax tr:nth-child(even) {
+        background-color: #f2f2f2
+    }
+
+    #ajax {
+        display: none;
+    }
+
+    /*th {*/
+    /*background-color: #242caf;*/
+    /*color: white;*/
+    /*}*/
+
+    #form {
+        width: 100%;
+        display: none;
+    }
+
+    input {
+        width: 90%;
+        padding: 2%;
+    }
+
+    button {
+        -webkit-appearance: none;
+        padding: 4%;
+        width: 100%;
+        font-size: 100%;
+    }
+
+    button {
+        margin-top: 2.5%;
+        background-color: #008CBA;
+        color: white;
+    }
+
+    #play {
+        position: fixed;
+        top: -2%;
+        width: 100%;
+        z-index: 100;
+        background-color: #008CBA;
+        color: white;
+        display: none;
+    }
+
+    #backButton {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        z-index: 100;
+        background-color: #008CBA;
+        color: white;
+        display: none;
+        font-size: 250%;
+    }
+
+</style>
